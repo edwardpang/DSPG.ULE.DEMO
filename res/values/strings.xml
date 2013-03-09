@@ -3,5 +3,9 @@
 
     <string name="app_name">DSPG ULE Demo</string>
     <string name="action_settings">Settings</string>
+    <string name="cmbs_status_heading">CMBS Status:</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="dspg_logo">DSPG Logo</string>
 
 </resources>

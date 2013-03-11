@@ -56,4 +56,20 @@
         android:layout_alignLeft="@+id/textView2"
         android:text="@string/not_available" />
 
+    <TextView
+        android:id="@+id/textViewVersionName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/imageView1"
+        android:text="@string/unknown" />
+
+    <TextView
+        android:id="@+id/textViewVersionHeading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/textViewVersionName"
+        android:layout_toLeftOf="@+id/textViewVersionName"
+        android:text="@string/version_heading" />
+
 </RelativeLayout>

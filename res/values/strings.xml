@@ -9,5 +9,7 @@
     <string name="dspg_logo">DSPG Logo</string>
     <string name="han_connected_device_heading">HAN Connected Device :</string>
     <string name="not_available">N/A</string>
+    
+    <color name="white">#FFFFFF</color>
 
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 0x3006 / 0x1977: DSPG CMBS USB Dongle -->
+    <usb-device vender-id="12294" product-id="6519" />
+</resources>

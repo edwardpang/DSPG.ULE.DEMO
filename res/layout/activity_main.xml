@@ -10,7 +10,7 @@
     tools:context=".MainActivity" >
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/imageViewDspgLogo"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_alignParentLeft="true"
@@ -21,39 +21,39 @@
         android:src="@drawable/dspg_logo" />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/textViewCmbsConnectedHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/imageView1"
-        android:layout_below="@+id/imageView1"
+        android:layout_alignLeft="@+id/imageViewDspgLogo"
+        android:layout_below="@+id/imageViewDspgLogo"
         android:layout_marginTop="20dp"
         android:text="@string/cmbs_connected_heading" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/textViewHanConnectedDeviceHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/textView1"
+        android:layout_alignLeft="@+id/textViewCmbsConnectedHeading"
+        android:layout_below="@+id/textViewCmbsConnectedHeading"
         android:layout_marginTop="10dp"
         android:text="@string/han_connected_device_heading" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/textViewCmbsConnectedAns"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/textView3"
+        android:layout_above="@+id/textViewHanConnectedDeviceHeading"
         android:layout_marginLeft="20dp"
-        android:layout_toRightOf="@+id/textView3"
+        android:layout_toRightOf="@+id/textViewHanConnectedDeviceHeading"
         android:text="@string/no" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/textViewHanConnectedDeviceAns"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView3"
-        android:layout_alignBottom="@+id/textView3"
-        android:layout_alignLeft="@+id/textView2"
+        android:layout_alignBaseline="@+id/textViewHanConnectedDeviceHeading"
+        android:layout_alignBottom="@+id/textViewHanConnectedDeviceHeading"
+        android:layout_alignLeft="@+id/textViewCmbsConnectedAns"
         android:text="@string/not_available" />
 
     <TextView
@@ -61,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/imageView1"
+        android:layout_alignRight="@+id/imageViewDspgLogo"
         android:text="@string/unknown" />
 
     <TextView

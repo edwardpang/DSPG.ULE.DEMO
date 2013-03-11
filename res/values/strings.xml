@@ -11,7 +11,16 @@
     <string name="not_available">N/A</string>
     <string name="version_heading">Version :</string>
     <string name="unknown">Unknown</string>
+    <string name="unit_id">Unit ID</string>
+    <string name="unit_type">Unit Type</string>
+    <string name="unit_alert">Alert #</string>
+    <string name="unit_tamper">Tamper #</string>
     
     <color name="white">#FFFFFF</color>
-
+    <color name="black">#000000</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#00FF00</color>
+    <color name="blue">#0000FF</color>
+    <color name="dspg_logo_color">#008095</color>
+   
 </resources>

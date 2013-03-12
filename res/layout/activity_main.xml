@@ -88,22 +88,22 @@
 			<TableRow>"
 				<TextView 
 					android:text="@string/unit_id"
-					android:width="150px"
+					android:width="50dp"
 					style="@style/table_header_style"
 					/>
 				<TextView
 					android:text="@string/unit_type"
-					android:width="150px"
+					android:width="80dp"
 					style="@style/table_header_style"
 					/>
 				<TextView
 					android:text="@string/unit_alert"
-					android:width="150px"
+					android:width="80dp"
 					style="@style/table_header_style"
 					/>
 				<TextView
 					android:text="@string/unit_tamper"
-					android:width="150px"
+					android:width="80dp"
 					style="@style/table_header_style"
 					/>
 			</TableRow>

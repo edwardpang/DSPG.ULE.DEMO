@@ -1,6 +1,7 @@
 package com.dspg.ule.demo;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,6 +10,8 @@ import com.dspg.ule.driver.UsbSerialProber;
 import com.dspg.ule.util.Debug;
 import com.dspg.ule.util.HexDump;
 import com.dspg.ule.util.SerialInputOutputManager;
+import com.dspg.ule.cmbs.RawData;
+import com.dspg.ule.cmbs.State;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -28,6 +31,7 @@ public class MainActivity extends Activity {
 	
 	private TextView mTextViewVersionName;
 	private TextView mTextViewCmbsConnectedAns;
+	private State mState;
 	
 	//private ScrollView mScrollViewHanDeviceTable;
 	private LinearLayout mScrollViewHanDeviceTableLayout;
@@ -69,9 +73,11 @@ public class MainActivity extends Activity {
 		//mScrollViewHanDeviceTable = (ScrollView) findViewById(R.id.scrollViewHanDeviceTable);
 	    mScrollViewHanDeviceTableLayout = (LinearLayout) findViewById (R.id.scrollViewHanDeviceTableLayout);
 
-	    updateHanDeviceTable (5);
 	    
 	    mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+	    mState = State.START;
+	    
+	    updateHanDeviceTable (5);
 	}
 
 	@Override
@@ -137,6 +143,8 @@ public class MainActivity extends Activity {
             Debug.d(TAG, "Starting io manager ..");
             mSerialIoManager = new SerialInputOutputManager(mSerialDevice, mListener);
             mExecutor.submit(mSerialIoManager);
+            
+    	    StateMachine ( );
         }
     }
 
@@ -150,6 +158,31 @@ public class MainActivity extends Activity {
         	Debug.d(TAG, message);
 //			mDumpTextView.append(message);
 //        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
+        	
+        	if (Arrays.equals(data, RawData.CMBS_CMD_HELLO_RPLY))
+        		mState = State.CMBS_CMD_HELLO_RPLY;
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_SYS_START_RES))
+        		mState = State.CMBS_EV_DSR_SYS_START_RES;
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MNGR_INIT_RES))
+        		mState = State.CMBS_EV_DSR_HAN_MNGR_INIT_RES;
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MNGR_START_RES))
+        		mState = State.CMBS_EV_DSR_HAN_MNGR_START_RES;        	
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_PARAM_AREA_SET_RES))
+        		mState = State.CMBS_EV_DSR_PARAM_AREA_SET_RES;           	
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_REGISTER_RES))
+        		mState = State.CMBS_EV_DSR_HAN_MSG_RECV_REGISTER_RES;
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_TAMPER)) {
+        		Debug.d (TAG, "TAMPER!!!");
+        		mState = State.IDLE;
+        	}
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALARM)) {
+        		Debug.d (TAG, "ALARM!!!");
+        		mState = State.IDLE;        	
+        	}
+        	else
+        		mState = State.IDLE;
+        	
+        	StateMachine ( );
     }
     
 	private void updateHanDeviceTable (int n) {
@@ -182,5 +215,46 @@ public class MainActivity extends Activity {
 		    
 		}
 		return retval;
+	}
+	
+	private void sendPacket (byte[] pkt) {
+     	if (mSerialDevice != null) {
+    	    try {
+    	        mSerialDevice.write(pkt, 1000);
+    	    } catch (IOException e) {
+    	        e.printStackTrace();
+    	    }
+    	}
+	}
+	
+	private void StateMachine () {
+		Debug.d(TAG, "State = " + mState);
+		
+		if (mState == State.START) {
+			sendPacket (RawData.CMBS_CMD_HELLO);
+			mState = State.CMBS_CMD_HELLO;
+		}
+		else if (mState == State.CMBS_CMD_HELLO_RPLY) {
+			sendPacket (RawData.CMBS_EV_DSR_SYS_START);
+			mState = State.CMBS_EV_DSR_SYS_START;
+		}
+		else if (mState == State.CMBS_EV_DSR_SYS_START_RES) {
+			sendPacket (RawData.CMBS_EV_DSR_RF_RESUME);
+			sendPacket (RawData.CMBS_EV_DSR_HAN_MNGR_INIT);
+			mState = State.CMBS_EV_DSR_HAN_MNGR_INIT;
+		}
+		else if (mState == State.CMBS_EV_DSR_HAN_MNGR_INIT_RES) {
+			sendPacket (RawData.CMBS_EV_DSR_HAN_MNGR_START);
+			mState = State.CMBS_EV_DSR_HAN_MNGR_START;
+		}
+		else if (mState == State.CMBS_EV_DSR_HAN_MNGR_START_RES) {
+			sendPacket (RawData.CMBS_EV_DSR_PARAM_AREA_SET);
+			mState = State.CMBS_EV_DSR_PARAM_AREA_SET;
+		}
+		else if (mState == State.CMBS_EV_DSR_PARAM_AREA_SET_RES) {
+			sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_REGISTER);
+			sendPacket (RawData.CMBS_EV_DSR_HAN_DEVICE_READ_TABLE);
+			mState = State.CMBS_EV_DSR_HAN_DEVICE_READ_TABLE;
+		}	
 	}
 }

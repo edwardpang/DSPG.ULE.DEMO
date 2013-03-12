@@ -197,7 +197,7 @@ public class DspgCmbsUsbSerialDriver implements UsbSerialDriver {
                 return 0;
             }
             System.arraycopy(mReadBuffer, 0, dest, 0, numBytesRead);
-            Debug.d(TAG, HexDump.dumpHexString(dest));
+            //Debug.d(TAG, HexDump.dumpHexString(dest));
         }
         return numBytesRead;
     }

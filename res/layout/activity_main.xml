@@ -93,7 +93,7 @@
 					/>
 				<TextView
 					android:text="@string/unit_type"
-					android:width="80dp"
+					android:width="100dp"
 					style="@style/table_header_style"
 					/>
 				<TextView

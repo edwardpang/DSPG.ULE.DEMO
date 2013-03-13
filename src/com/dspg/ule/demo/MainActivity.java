@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
 	private State mState;
 	private int mTamperCnt;
 	private int mAlertCnt;
+	private int mHanDeviceCnt;
 	
 	//private ScrollView mScrollViewHanDeviceTable;
 	private LinearLayout mScrollViewHanDeviceTableLayout;
@@ -71,7 +72,6 @@ public class MainActivity extends Activity {
 		
 		mTextViewCmbsConnectedAns = (TextView) findViewById(R.id.textViewCmbsConnectedAns);
 		mTextViewHanConnectedDeviceAns = (TextView) findViewById(R.id.textViewHanConnectedDeviceAns);
-		mTextViewHanConnectedDeviceAns.setText("1");
 		mTextViewVersionName = (TextView) findViewById(R.id.textViewVersionName);
 		mTextViewVersionName.setText (getVersionName());
 		
@@ -83,8 +83,7 @@ public class MainActivity extends Activity {
 	    mState = State.START;
 	    mTamperCnt = 0;
 	    mAlertCnt = 0;
-	    
-	    createHanDeviceTable (1);
+	    mHanDeviceCnt = 1;
 	}
 
 	@Override
@@ -195,32 +194,45 @@ public class MainActivity extends Activity {
         	updateHanDeviceTable ( );
     }
     
-	private void createHanDeviceTable (int n) {
-		for(int i = 0; i < n; i ++) {
-			TableRow row = new TableRow(this);
-			TextView tv1 = new TextView(this);
-			tv1.setText("#"+i);
-			
-			TextView tv2 = new TextView(this);
-			tv2.setText("Smoke Sensor");
-			
-			TextView tvAlert = new TextView (this);
-			tvAlert.setText(Integer.toString(mAlertCnt));
-
-			TextView tvTamper = new TextView (this);
-			tvTamper.setText(Integer.toString(mTamperCnt));
-
-			row.addView(tv1);
-			row.addView(tv2);
-			row.addView(tvAlert);
-			row.addView(tvTamper);
-			
-			mScrollViewHanDeviceTableLayout.addView(row);
+	private void createHanDeviceTable ( ) {
+		if (mSerialDevice != null) {	
+			for(int i = 0; i < mHanDeviceCnt; i ++) {
+				TableRow row = new TableRow(this);
+				TextView tv1 = new TextView(this);
+				tv1.setText("#"+i);
+				
+				TextView tv2 = new TextView(this);
+				tv2.setText("Smoke Sensor");
+				
+				TextView tvAlert = new TextView (this);
+				tvAlert.setText(Integer.toString(mAlertCnt));
+	
+				TextView tvTamper = new TextView (this);
+				tvTamper.setText(Integer.toString(mTamperCnt));
+	
+				row.addView(tv1);
+				row.addView(tv2);
+				row.addView(tvAlert);
+				row.addView(tvTamper);
+				
+				mScrollViewHanDeviceTableLayout.addView(row);
+			}
+			mTextViewHanConnectedDeviceAns.setText(Integer.toString(mHanDeviceCnt));
 		}
 	}
 	
+	private void removeHanDeviceTable ( ) {
+		int n = mScrollViewHanDeviceTableLayout.getChildCount();
+		mScrollViewHanDeviceTableLayout.removeViewsInLayout(1, n-1);
+	}
+	
 	private void updateHanDeviceTable ( ) {
-		if (mState == State.IDLE)
+		if (mScrollViewHanDeviceTableLayout.getChildCount() != (mHanDeviceCnt+1)) {
+			removeHanDeviceTable ( );
+			createHanDeviceTable ( );
+		}
+		
+		if (mSerialDevice != null && mState == State.IDLE)
 		{
 			TableRow row = (TableRow) mScrollViewHanDeviceTableLayout.getChildAt(1);
 			TextView tvAlert = (TextView)row.getChildAt(2);

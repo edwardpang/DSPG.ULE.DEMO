@@ -15,9 +15,12 @@ import com.dspg.ule.cmbs.State;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.hardware.usb.UsbManager;
+import android.telephony.SmsManager;
 import android.view.Menu;
 
 import android.widget.LinearLayout;
@@ -159,6 +162,14 @@ public class MainActivity extends Activity {
         startIoManager();
     }
     
+    private void sendSMS(String phoneNumber, String message)
+    {        
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+            new Intent(this, MainActivity.class), 0);                
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage(phoneNumber, null, message, pi, null);        
+    } 
+    
     private void updateReceivedData(byte[] data) {
         final String message = "Read " + data.length + " bytes: " + HexDump.dumpHexString(data);
         	Debug.d(TAG, message);
@@ -181,11 +192,19 @@ public class MainActivity extends Activity {
         		Debug.d (TAG, "TAMPER!!!");
         		mTamperCnt ++;
         		mState = State.IDLE;
+        		
+                String phoneNo = "93794329";
+                String msg = "DSPG ULE Demo: Received Tamper " + Integer.toString(mTamperCnt) + " times";                 
+                sendSMS(phoneNo, msg);                
         	}
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALERT)) {
         		Debug.d (TAG, "ALERT!!!");
         		mAlertCnt ++;
         		mState = State.IDLE;        	
+
+        		String phoneNo = "93794329";
+                String msg = "DSPG ULE Demo: Received Alert " + Integer.toString(mAlertCnt) + " times";                 
+                sendSMS(phoneNo, msg);                
         	}
         	else
         		mState = State.IDLE;

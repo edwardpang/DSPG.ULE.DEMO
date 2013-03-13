@@ -3,6 +3,7 @@
 
     <string name="app_name">DSPG ULE Demo</string>
     <string name="menu_about">About</string>
+    <string name="menu_setting">Setting</string>
     <string name="cmbs_connected_heading">CMBS Connected :</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

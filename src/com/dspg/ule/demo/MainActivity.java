@@ -182,7 +182,7 @@ public class MainActivity extends Activity {
         		mTamperCnt ++;
         		mState = State.IDLE;
         	}
-        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALARM)) {
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALERT)) {
         		Debug.d (TAG, "ALERT!!!");
         		mAlertCnt ++;
         		mState = State.IDLE;        	

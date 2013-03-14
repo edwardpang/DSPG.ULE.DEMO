@@ -162,10 +162,10 @@ public class MainActivity extends Activity {
         startIoManager();
     }
     
-    private void sendSMS(String phoneNumber, String message)
-    {        
-        PendingIntent pi = PendingIntent.getActivity(this, 0,
-            new Intent(this, MainActivity.class), 0);                
+    private void sendSMS (String m) {
+        String phoneNumber = "93794329";
+        String message = "DSPG ULE Demo: Received " + m;
+        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
         SmsManager sms = SmsManager.getDefault();
         sms.sendTextMessage(phoneNumber, null, message, pi, null);        
     } 
@@ -192,19 +192,13 @@ public class MainActivity extends Activity {
         		Debug.d (TAG, "TAMPER!!!");
         		mTamperCnt ++;
         		mState = State.IDLE;
-        		
-                String phoneNo = "93794329";
-                String msg = "DSPG ULE Demo: Received Tamper " + Integer.toString(mTamperCnt) + " times";                 
-                sendSMS(phoneNo, msg);                
+                sendSMS("Tamper");
         	}
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALERT)) {
         		Debug.d (TAG, "ALERT!!!");
         		mAlertCnt ++;
-        		mState = State.IDLE;        	
-
-        		String phoneNo = "93794329";
-                String msg = "DSPG ULE Demo: Received Alert " + Integer.toString(mAlertCnt) + " times";                 
-                sendSMS(phoneNo, msg);                
+        		mState = State.IDLE;
+                sendSMS("Alert");
         	}
         	else
         		mState = State.IDLE;

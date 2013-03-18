@@ -14,14 +14,17 @@ import com.dspg.ule.cmbs.RawData;
 import com.dspg.ule.cmbs.State;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.hardware.usb.UsbManager;
 import android.telephony.SmsManager;
 import android.view.Menu;
+import android.view.MenuItem;
 
 import android.widget.LinearLayout;
 //import android.widget.ScrollView;
@@ -39,6 +42,7 @@ public class MainActivity extends Activity {
 	private int mTamperCnt;
 	private int mAlertCnt;
 	private int mHanDeviceCnt;
+	private SharedPreferences mPerf;
 	
 	//private ScrollView mScrollViewHanDeviceTable;
 	private LinearLayout mScrollViewHanDeviceTableLayout;
@@ -87,6 +91,8 @@ public class MainActivity extends Activity {
 	    mTamperCnt = 0;
 	    mAlertCnt = 0;
 	    mHanDeviceCnt = 1;
+	    
+	    mPerf = PreferenceManager.getDefaultSharedPreferences(this);
 	}
 
 	@Override
@@ -138,6 +144,20 @@ public class MainActivity extends Activity {
         onDeviceStateChange();
     }
  
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+        case R.id.menu_about:
+            return true;
+        case R.id.menu_setting:
+            Intent intent = new Intent(this, SettingActivity.class);
+            startActivity(intent);
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+    
 	// IO Manager Section
     private void stopIoManager() {
         if (mSerialIoManager != null) {
@@ -163,7 +183,10 @@ public class MainActivity extends Activity {
     }
     
     private void sendSMS (String m) {
-        String phoneNumber = "93794329";
+        String phoneNumber = mPerf.getString ("setting_phone_number", "93794329");
+        if (phoneNumber.matches(""))
+        	phoneNumber = "93794329";
+        Debug.d(TAG, phoneNumber);
         String message = "DSPG ULE Demo: Received " + m;
         PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
         SmsManager sms = SmsManager.getDefault();
@@ -192,13 +215,17 @@ public class MainActivity extends Activity {
         		Debug.d (TAG, "TAMPER!!!");
         		mTamperCnt ++;
         		mState = State.IDLE;
-                sendSMS("Tamper");
+        		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
+        		if (enableSms == true)
+        			sendSMS("Tamper");
         	}
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALERT)) {
         		Debug.d (TAG, "ALERT!!!");
         		mAlertCnt ++;
         		mState = State.IDLE;
-                sendSMS("Alert");
+        		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
+        		if (enableSms == true)
+        			sendSMS("Alert");
         	}
         	else
         		mState = State.IDLE;

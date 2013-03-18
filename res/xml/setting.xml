@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="Setting">
+        <CheckBoxPreference android:key="enable_sms" android:summary="When Alert or Tamper received, phone send SMS to a specific number" android:title="Enable SMS"/><EditTextPreference 
+            android:title="Phone Number" 
+            android:key="setting_phone_number"
+            android:phoneNumber="true"
+            android:summary="Please input a number to receive SMS"/>
+        
+    </PreferenceCategory>
+</PreferenceScreen>

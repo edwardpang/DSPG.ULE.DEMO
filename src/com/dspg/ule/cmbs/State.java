@@ -27,5 +27,9 @@ public enum State {
 	
 	private State (int i) {
 		this.numState = i;
-	}	
+	}
+	
+	public int getState (int n) {
+		return (this.numState);
+	}
 }

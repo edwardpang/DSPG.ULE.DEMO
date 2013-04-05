@@ -2,6 +2,7 @@ package com.dspg.ule.demo;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -10,8 +11,10 @@ import com.dspg.ule.driver.UsbSerialProber;
 import com.dspg.ule.util.Debug;
 import com.dspg.ule.util.HexDump;
 import com.dspg.ule.util.SerialInputOutputManager;
+import com.dspg.ule.cmbs.HanDevice;
 import com.dspg.ule.cmbs.RawData;
 import com.dspg.ule.cmbs.State;
+import com.dspg.ule.cmbs.UnitType;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -25,6 +28,8 @@ import android.hardware.usb.UsbManager;
 import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import android.widget.LinearLayout;
 //import android.widget.ScrollView;
@@ -39,9 +44,7 @@ public class MainActivity extends Activity {
 	private TextView mTextViewCmbsConnectedAns;
 	private TextView mTextViewHanConnectedDeviceAns;
 	private State mState;
-	private int mTamperCnt;
-	private int mAlertCnt;
-	private int mHanDeviceCnt;
+	private LinkedList<HanDevice> mHanDeviceLinkedList;
 	private SharedPreferences mPerf;
 	
 	//private ScrollView mScrollViewHanDeviceTable;
@@ -88,9 +91,10 @@ public class MainActivity extends Activity {
 	    
 	    mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 	    mState = State.START;
-	    mTamperCnt = 0;
-	    mAlertCnt = 0;
-	    mHanDeviceCnt = 1;
+	    
+	    // Multiple HAN Devices
+	    mHanDeviceLinkedList = new LinkedList<HanDevice> ( );
+	    createHanDeviceLinkedList ( );
 	    
 	    mPerf = PreferenceManager.getDefaultSharedPreferences(this);
 	}
@@ -124,6 +128,9 @@ public class MainActivity extends Activity {
         if (mSerialDevice == null) {
             Debug.i(TAG, "No serial device.");
             mTextViewCmbsConnectedAns.setText(R.string.no);
+            mTextViewHanConnectedDeviceAns.setText(R.string.not_available);
+            mHanDeviceLinkedList.clear();
+            updateHanDeviceTable ( );
         } else {
             try {
                 mSerialDevice.open();
@@ -131,6 +138,9 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 Debug.e(TAG, "Error setting up device: " + e.getMessage());
                 mTextViewCmbsConnectedAns.setText(R.string.no);
+                mTextViewHanConnectedDeviceAns.setText(R.string.not_available);
+                mHanDeviceLinkedList.clear();
+                updateHanDeviceTable ( );
                 try {
                     mSerialDevice.close();
                 } catch (IOException e2) {
@@ -181,6 +191,7 @@ public class MainActivity extends Activity {
         stopIoManager();
         startIoManager();
     }
+
     
     private void sendSMS (String m) {
         String phoneNumber = mPerf.getString ("setting_phone_number", "93794329");
@@ -213,7 +224,7 @@ public class MainActivity extends Activity {
         		mState = State.CMBS_EV_DSR_HAN_MSG_RECV_REGISTER_RES;
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_TAMPER)) {
         		Debug.d (TAG, "TAMPER!!!");
-        		mTamperCnt ++;
+        		//mTamperCnt ++;
         		mState = State.IDLE;
         		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
         		if (enableSms == true)
@@ -221,7 +232,7 @@ public class MainActivity extends Activity {
         	}
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALERT)) {
         		Debug.d (TAG, "ALERT!!!");
-        		mAlertCnt ++;
+        		//mAlertCnt ++;
         		mState = State.IDLE;
         		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
         		if (enableSms == true)
@@ -235,43 +246,74 @@ public class MainActivity extends Activity {
     }
     
 	private void createHanDeviceTable ( ) {
-		if (mSerialDevice != null) {	
-			for(int i = 0; i < mHanDeviceCnt; i ++) {
+		Debug.d(TAG, "mHanDeviceLinkedList.size = " + mHanDeviceLinkedList.size());
+		if (mSerialDevice != null && mHanDeviceLinkedList.size() > 0) {
+			for (int i = 0; i < mHanDeviceLinkedList.size(); i ++) {
+				HanDevice hd = mHanDeviceLinkedList.get(i);
+				
 				TableRow row = new TableRow(this);
 				TextView tv1 = new TextView(this);
-				tv1.setText("#"+i);
+				tv1.setText("#" + hd.getDeviceId());
 				
-				TextView tv2 = new TextView(this);
-				tv2.setText("Smoke Sensor");
+				TextView tv2 = new TextView(this);				
+				if (hd.getUnitType() == UnitType.SMOKE_SENSOR) {
+					tv2.setText("Smoke (0x" + Integer.toHexString(UnitType.SMOKE_SENSOR.getUnitType()) + ")");
+				}
+				else if (hd.getUnitType() == UnitType.MOTION_SENSOR) {
+					tv2.setText("Motion (0x" + Integer.toHexString(UnitType.MOTION_SENSOR.getUnitType()) + ")");
+				}		
+				else if (hd.getUnitType() == UnitType.AC_OUTLET) {
+					tv2.setText("AC Outlet (0x" + Integer.toHexString(UnitType.AC_OUTLET.getUnitType()) + ")");
+				}	
 				
 				TextView tvAlert = new TextView (this);
-				tvAlert.setText(Integer.toString(mAlertCnt));
+				tvAlert.setText(Integer.toString(hd.getAlertCnt()));
 	
 				TextView tvTamper = new TextView (this);
-				tvTamper.setText(Integer.toString(mTamperCnt));
+				tvTamper.setText(Integer.toString(hd.getTamperCnt()));
 	
 				row.addView(tv1);
 				row.addView(tv2);
 				row.addView(tvAlert);
 				row.addView(tvTamper);
 				
-				mScrollViewHanDeviceTableLayout.addView(row);
+				mScrollViewHanDeviceTableLayout.addView(row);				
 			}
-			mTextViewHanConnectedDeviceAns.setText(Integer.toString(mHanDeviceCnt));
+			mTextViewHanConnectedDeviceAns.setText(Integer.toString(mHanDeviceLinkedList.size()));
 		}
 	}
-	
+    
 	private void removeHanDeviceTable ( ) {
 		int n = mScrollViewHanDeviceTableLayout.getChildCount();
+		
+		for (int i = 1; i < n; i++) {
+		    View child = mScrollViewHanDeviceTableLayout.getChildAt(i);
+		    if (child instanceof TableRow) ((ViewGroup) child).removeAllViews();
+		}
 		mScrollViewHanDeviceTableLayout.removeViewsInLayout(1, n-1);
+		
 	}
 	
+    private void createHanDeviceLinkedList ( ) {
+	    // TODO: hardcode mHanDeviceLinkedList content below
+    	HanDevice hd1 = new HanDevice (1, UnitType.SMOKE_SENSOR);
+    	HanDevice hd2 = new HanDevice (2, UnitType.MOTION_SENSOR);
+    	HanDevice hd3 = new HanDevice (3, UnitType.AC_OUTLET);
+    	
+    	mHanDeviceLinkedList.clear();
+    	mHanDeviceLinkedList.add(hd1);
+    	mHanDeviceLinkedList.add(hd2);
+    	mHanDeviceLinkedList.add(hd3);
+    }
+
+	
 	private void updateHanDeviceTable ( ) {
-		if (mScrollViewHanDeviceTableLayout.getChildCount() != (mHanDeviceCnt+1)) {
+		// count = header row (1) + linkedlist size
+		if (mScrollViewHanDeviceTableLayout.getChildCount() != (mHanDeviceLinkedList.size()+1)) {
 			removeHanDeviceTable ( );
 			createHanDeviceTable ( );
 		}
-		
+	/*	
 		if (mSerialDevice != null && mState == State.IDLE)
 		{
 			TableRow row = (TableRow) mScrollViewHanDeviceTableLayout.getChildAt(1);
@@ -280,7 +322,7 @@ public class MainActivity extends Activity {
 			
 			tvAlert.setText (Integer.toString(mAlertCnt));
 			tvTamper.setText (Integer.toString(mTamperCnt));
-		}
+		}*/
 	}
 	
 	private String getVersionName () {

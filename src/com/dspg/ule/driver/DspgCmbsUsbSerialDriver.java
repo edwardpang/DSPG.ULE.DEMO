@@ -231,8 +231,8 @@ public class DspgCmbsUsbSerialDriver implements UsbSerialDriver {
                         + " bytes at offset " + offset + " length=" + src.length);
             }
 
-            Debug.d(TAG, "Wrote amt=" + amtWritten + " attempted=" + writeLength);
-            Debug.d(TAG, HexDump.dumpHexString(src));
+            //Debug.d(TAG, "Wrote amt=" + amtWritten + " attempted=" + writeLength);
+            //Debug.d(TAG, HexDump.dumpHexString(src));
             offset += amtWritten;
         }
         return offset;

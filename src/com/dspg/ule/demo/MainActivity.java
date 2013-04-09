@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
 	private TextView mTextViewVersionName;
 	private TextView mTextViewCmbsConnectedAns;
 	private TextView mTextViewHanConnectedDeviceAns;
+	private TextView mTextViewLedOnOff;
 	private State mState;
 	private LinkedList<HanDevice> mHanDeviceLinkedList;
 	private SharedPreferences mPerf;
@@ -81,6 +82,7 @@ public class MainActivity extends Activity {
 		
 		mTextViewCmbsConnectedAns = (TextView) findViewById(R.id.textViewCmbsConnectedAns);
 		mTextViewHanConnectedDeviceAns = (TextView) findViewById(R.id.textViewHanConnectedDeviceAns);
+		mTextViewLedOnOff = (TextView) findViewById(R.id.textViewLedOnOff);
 		mTextViewVersionName = (TextView) findViewById(R.id.textViewVersionName);
 		mTextViewVersionName.setText (getVersionName());
 		
@@ -129,6 +131,7 @@ public class MainActivity extends Activity {
             mTextViewHanConnectedDeviceAns.setText(R.string.not_available);
             mHanDeviceLinkedList.clear();
             updateHanDeviceTable ( );
+            updateLedStatus ( );
         } else {
             try {
                 mSerialDevice.open();
@@ -139,6 +142,7 @@ public class MainActivity extends Activity {
                 mTextViewHanConnectedDeviceAns.setText(R.string.not_available);
                 mHanDeviceLinkedList.clear();
                 updateHanDeviceTable ( );
+                updateLedStatus ( );
                 try {
                     mSerialDevice.close();
                 } catch (IOException e2) {
@@ -167,11 +171,21 @@ public class MainActivity extends Activity {
     }
     
     public void buttonAcOutletOnHandler (View target) {
-    	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_ON);
+    	if (mSerialIoManager != null) {
+			HanDevice hd = mHanDeviceLinkedList.get(2);
+			hd.setWaitOnOff(true);
+			mHanDeviceLinkedList.set(2, hd);
+	    	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_ON);
+    	}
     }
 	
     public void buttonAcOutletOffHandler (View target) {
-    	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_OFF);
+    	if (mSerialIoManager != null) {
+			HanDevice hd = mHanDeviceLinkedList.get(2);
+			hd.setWaitOnOff(false);
+			mHanDeviceLinkedList.set(2, hd);
+	    	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_OFF);
+    	}
     }
 
     public void buttonResetHandler (View target) {
@@ -220,8 +234,8 @@ public class MainActivity extends Activity {
     } 
     
     private void updateReceivedData(byte[] data) {
-        final String message = "Read " + data.length + " bytes: " + HexDump.dumpHexString(data);
-        	Debug.d(TAG, message);
+        //final String message = "Read " + data.length + " bytes: " + HexDump.dumpHexString(data);
+        	//Debug.d(TAG, message);
 //			mDumpTextView.append(message);
 //        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
         	
@@ -271,10 +285,17 @@ public class MainActivity extends Activity {
         	}
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_KEEP_ALIVE)) {
         		Debug.d (TAG, "AC Outlet KEEP ALIVE!!!");
-        		//mAlertCnt ++;
         		HanDevice hd = mHanDeviceLinkedList.get(2);
         		hd.incKeepAliveCnt();
         		mHanDeviceLinkedList.set(2, hd);
+        		mState = State.IDLE;
+        	}
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_ON_OFF_ACK)) {
+        		HanDevice hd = mHanDeviceLinkedList.get(2);
+        		Debug.d (TAG, "AC Outlet ON/OFF ACK!!! original=" + hd.getOnOff() + " new=" + hd.getWaitOnOff ( ));
+        		hd.setOnOff(hd.getWaitOnOff());
+        		mHanDeviceLinkedList.set(2, hd);
+            	updateLedStatus ( );
         		mState = State.IDLE;
         	}
         	else
@@ -350,6 +371,17 @@ public class MainActivity extends Activity {
 		}
 	}
 	
+	private void updateLedStatus ( ) {
+		if (mSerialDevice != null && mHanDeviceLinkedList.size() > 0)
+		{	
+			HanDevice hd = mHanDeviceLinkedList.get(2);
+			if (hd.getOnOff() == true)
+				mTextViewLedOnOff.setText (R.string.led_is_on);
+			else
+				mTextViewLedOnOff.setText (R.string.led_is_off);
+		}
+	}
+	
 	private String getVersionName () {
 		String retval;
 		
@@ -377,7 +409,7 @@ public class MainActivity extends Activity {
 	}
 	
 	private void StateMachine () {
-		Debug.d(TAG, "State = " + mState);
+		//Debug.d(TAG, "State = " + mState);
 		
 		if (mState == State.START) {
 			sendPacket (RawData.CMBS_CMD_HELLO);

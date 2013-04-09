@@ -143,5 +143,14 @@
         android:layout_below="@+id/buttonAcOutletOn"
         android:onClick="buttonResetHandler"
         android:text="@string/reset" />
+
+    <TextView
+        android:id="@+id/textViewLedOnOff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/buttonAcOutletOff"
+        android:layout_alignBottom="@+id/buttonAcOutletOff"
+        android:layout_alignLeft="@+id/textViewHanConnectedDeviceAns"
+        android:text="@string/led_is_on" />
     		
 </RelativeLayout>

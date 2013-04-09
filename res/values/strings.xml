@@ -9,6 +9,8 @@
     <string name="no">No</string>
     <string name="on">LED On</string>
     <string name="off">LED Off</string>
+    <string name="led_is_on">LED is On now</string>
+    <string name="led_is_off">LED is Off now</string>
     <string name="reset">Reset Table</string>
     <string name="dspg_logo">DSPG Logo</string>
     <string name="han_connected_device_heading">HAN Connected Device :</string>

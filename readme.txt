@@ -6,4 +6,4 @@ v1.1
 	Add setting menu for SMS phone number
 	
 v1.2
-	Add Motion Sensor and AC Outlet demostration
+	Add Motion Sensor and AC Outlet demonstration

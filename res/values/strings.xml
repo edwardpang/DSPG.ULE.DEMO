@@ -7,13 +7,16 @@
     <string name="cmbs_connected_heading">CMBS Connected :</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
     <string name="dspg_logo">DSPG Logo</string>
     <string name="han_connected_device_heading">HAN Connected Device :</string>
     <string name="not_available">N/A</string>
     <string name="version_heading">Version :</string>
     <string name="unknown">Unknown</string>
-    <string name="unit_id">Unit ID</string>
+    <string name="unit_id">ID</string>
     <string name="unit_type">Unit Type</string>
+    <string name="unit_keep_alive">Keep Alive #</string>
     <string name="unit_alert">Alert #</string>
     <string name="unit_tamper">Tamper #</string>
     

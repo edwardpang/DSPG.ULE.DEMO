@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 
 import android.widget.LinearLayout;
 //import android.widget.ScrollView;
+import android.widget.Button;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -87,7 +88,6 @@ public class MainActivity extends Activity {
 		
 		//mScrollViewHanDeviceTable = (ScrollView) findViewById(R.id.scrollViewHanDeviceTable);
 	    mScrollViewHanDeviceTableLayout = (LinearLayout) findViewById (R.id.scrollViewHanDeviceTableLayout);
-
 	    
 	    mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 	    mState = State.START;
@@ -168,7 +168,15 @@ public class MainActivity extends Activity {
         }
     }
     
-	// IO Manager Section
+    public void buttonAcOutletOnHandler (View target) {
+    	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_ON);
+    }
+	
+    public void buttonAcOutletOffHandler (View target) {
+    	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_OFF);
+    }
+
+    // IO Manager Section
     private void stopIoManager() {
         if (mSerialIoManager != null) {
             Debug.d(TAG, "Stopping io manager ..");
@@ -212,6 +220,8 @@ public class MainActivity extends Activity {
         	
         	if (Arrays.equals(data, RawData.CMBS_CMD_HELLO_RPLY))
         		mState = State.CMBS_CMD_HELLO_RPLY;
+        	else if (Arrays.equals(data, RawData.CMBS_CMD_HELLO_RPLY2))
+        		mState = State.CMBS_CMD_HELLO_RPLY;
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_SYS_START_RES))
         		mState = State.CMBS_EV_DSR_SYS_START_RES;
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MNGR_INIT_RES))
@@ -222,21 +232,46 @@ public class MainActivity extends Activity {
         		mState = State.CMBS_EV_DSR_PARAM_AREA_SET_RES;           	
         	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_REGISTER_RES))
         		mState = State.CMBS_EV_DSR_HAN_MSG_RECV_REGISTER_RES;
-        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_TAMPER)) {
-        		Debug.d (TAG, "TAMPER!!!");
-        		//mTamperCnt ++;
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_SMOKE_TAMPER)) {
+        		Debug.d (TAG, "Smoke TAMPER!!!");
+        		HanDevice hd = mHanDeviceLinkedList.get(0);
+        		hd.incTamperCnt();
+        		mHanDeviceLinkedList.set(0, hd);
         		mState = State.IDLE;
         		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
         		if (enableSms == true)
-        			sendSMS("Tamper");
+        			sendSMS("Smoke Tamper");
         	}
-        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_ALERT)) {
-        		Debug.d (TAG, "ALERT!!!");
-        		//mAlertCnt ++;
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_SMOKE_ALERT)) {
+        		Debug.d (TAG, "Smoke ALERT!!!");
+        		HanDevice hd = mHanDeviceLinkedList.get(0);
+        		hd.incAlertCnt();
+        		mHanDeviceLinkedList.set(0, hd);
         		mState = State.IDLE;
         		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
         		if (enableSms == true)
-        			sendSMS("Alert");
+        			sendSMS("Smoke Alert");
+        	}
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_MOTION_TAMPER)) {
+        		Debug.d (TAG, "Motion TAMPER!!!");
+        		HanDevice hd = mHanDeviceLinkedList.get(1);
+        		hd.incTamperCnt();
+        		mHanDeviceLinkedList.set(1, hd);
+        		mState = State.IDLE;
+        		boolean enableSms = mPerf.getBoolean ("enable_sms", false);
+        		if (enableSms == true)
+        			sendSMS("Motion Tamper");
+        	}
+        	else if (Arrays.equals(data, RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_KEEP_ALIVE)) {
+        		Debug.d (TAG, "AC Outlet KEEP ALIVE!!!");
+        		//mAlertCnt ++;
+        		HanDevice hd = mHanDeviceLinkedList.get(2);
+        		hd.incKeepAliveCnt();
+        		mHanDeviceLinkedList.set(2, hd);
+        		mState = State.IDLE;
+        		//boolean enableSms = mPerf.getBoolean ("enable_sms", false);
+        		//if (enableSms == true)
+        		//	sendSMS("Alert");
         	}
         	else
         		mState = State.IDLE;
@@ -244,44 +279,6 @@ public class MainActivity extends Activity {
         	StateMachine ( );
         	updateHanDeviceTable ( );
     }
-    
-	private void createHanDeviceTable ( ) {
-		Debug.d(TAG, "mHanDeviceLinkedList.size = " + mHanDeviceLinkedList.size());
-		if (mSerialDevice != null && mHanDeviceLinkedList.size() > 0) {
-			for (int i = 0; i < mHanDeviceLinkedList.size(); i ++) {
-				HanDevice hd = mHanDeviceLinkedList.get(i);
-				
-				TableRow row = new TableRow(this);
-				TextView tv1 = new TextView(this);
-				tv1.setText("#" + hd.getDeviceId());
-				
-				TextView tv2 = new TextView(this);				
-				if (hd.getUnitType() == UnitType.SMOKE_SENSOR) {
-					tv2.setText("Smoke (0x" + Integer.toHexString(UnitType.SMOKE_SENSOR.getUnitType()) + ")");
-				}
-				else if (hd.getUnitType() == UnitType.MOTION_SENSOR) {
-					tv2.setText("Motion (0x" + Integer.toHexString(UnitType.MOTION_SENSOR.getUnitType()) + ")");
-				}		
-				else if (hd.getUnitType() == UnitType.AC_OUTLET) {
-					tv2.setText("AC Outlet (0x" + Integer.toHexString(UnitType.AC_OUTLET.getUnitType()) + ")");
-				}	
-				
-				TextView tvAlert = new TextView (this);
-				tvAlert.setText(Integer.toString(hd.getAlertCnt()));
-	
-				TextView tvTamper = new TextView (this);
-				tvTamper.setText(Integer.toString(hd.getTamperCnt()));
-	
-				row.addView(tv1);
-				row.addView(tv2);
-				row.addView(tvAlert);
-				row.addView(tvTamper);
-				
-				mScrollViewHanDeviceTableLayout.addView(row);				
-			}
-			mTextViewHanConnectedDeviceAns.setText(Integer.toString(mHanDeviceLinkedList.size()));
-		}
-	}
     
 	private void removeHanDeviceTable ( ) {
 		int n = mScrollViewHanDeviceTableLayout.getChildCount();
@@ -308,21 +305,45 @@ public class MainActivity extends Activity {
 
 	
 	private void updateHanDeviceTable ( ) {
-		// count = header row (1) + linkedlist size
-		if (mScrollViewHanDeviceTableLayout.getChildCount() != (mHanDeviceLinkedList.size()+1)) {
-			removeHanDeviceTable ( );
-			createHanDeviceTable ( );
+		removeHanDeviceTable ( );
+		if (mSerialDevice != null && mHanDeviceLinkedList.size() > 0) {
+			for (int i = 0; i < mHanDeviceLinkedList.size(); i ++) {
+				HanDevice hd = mHanDeviceLinkedList.get(i);
+				
+				TableRow row = new TableRow(this);
+				TextView tv1 = new TextView(this);
+				tv1.setText("#" + hd.getDeviceId());
+				
+				TextView tv2 = new TextView(this);				
+				if (hd.getUnitType() == UnitType.SMOKE_SENSOR) {
+					tv2.setText("Smoke (0x" + Integer.toHexString(UnitType.SMOKE_SENSOR.getUnitType()) + ")");
+				}
+				else if (hd.getUnitType() == UnitType.MOTION_SENSOR) {
+					tv2.setText("Motion (0x" + Integer.toHexString(UnitType.MOTION_SENSOR.getUnitType()) + ")");
+				}		
+				else if (hd.getUnitType() == UnitType.AC_OUTLET) {
+					tv2.setText("AC Outlet (0x" + Integer.toHexString(UnitType.AC_OUTLET.getUnitType()) + ")");
+				}	
+
+				TextView tvKeepAlive = new TextView (this);
+				tvKeepAlive.setText(Integer.toString(hd.getKeepAliveCnt()));
+				
+				TextView tvAlert = new TextView (this);
+				tvAlert.setText(Integer.toString(hd.getAlertCnt()));
+	
+				TextView tvTamper = new TextView (this);
+				tvTamper.setText(Integer.toString(hd.getTamperCnt()));
+	
+				row.addView(tv1);
+				row.addView(tv2);
+				row.addView(tvKeepAlive);
+				row.addView(tvAlert);
+				row.addView(tvTamper);
+				
+				mScrollViewHanDeviceTableLayout.addView(row);				
+			}
+			mTextViewHanConnectedDeviceAns.setText(Integer.toString(mHanDeviceLinkedList.size()));
 		}
-	/*	
-		if (mSerialDevice != null && mState == State.IDLE)
-		{
-			TableRow row = (TableRow) mScrollViewHanDeviceTableLayout.getChildAt(1);
-			TextView tvAlert = (TextView)row.getChildAt(2);
-			TextView tvTamper = (TextView)row.getChildAt(3);
-			
-			tvAlert.setText (Integer.toString(mAlertCnt));
-			tvTamper.setText (Integer.toString(mTamperCnt));
-		}*/
 	}
 	
 	private String getVersionName () {

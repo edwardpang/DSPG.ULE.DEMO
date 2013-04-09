@@ -7,3 +7,8 @@ v1.1
 	
 v1.2
 	Add Motion Sensor and AC Outlet demonstration
+
+v1.3
+	Add Reset Table button
+	Add AC Outlet LED on/off acknowledgement from CMBS
+	

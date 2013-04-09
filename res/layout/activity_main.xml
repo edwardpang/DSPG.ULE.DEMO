@@ -75,7 +75,7 @@
     <ScrollView
         android:id="@+id/scrollViewHanDeviceTable"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="120dp"
         android:layout_alignLeft="@+id/textViewHanConnectedDeviceHeading"
         android:layout_below="@+id/textViewHanConnectedDeviceHeading"
         android:layout_marginTop="20dp" >
@@ -134,5 +134,14 @@
         android:layout_toRightOf="@+id/buttonAcOutletOn"
         android:onClick="buttonAcOutletOffHandler"
         android:text="@string/off" />
-		
+
+    <Button
+        android:id="@+id/buttonReset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/buttonAcOutletOn"
+        android:layout_below="@+id/buttonAcOutletOn"
+        android:onClick="buttonResetHandler"
+        android:text="@string/reset" />
+    		
 </RelativeLayout>

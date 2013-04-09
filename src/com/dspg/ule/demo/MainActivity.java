@@ -32,8 +32,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.LinearLayout;
-//import android.widget.ScrollView;
-import android.widget.Button;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -176,6 +174,15 @@ public class MainActivity extends Activity {
     	sendPacket (RawData.CMBS_EV_DSR_HAN_MSG_RECV_AC_OUTLET_OFF);
     }
 
+    public void buttonResetHandler (View target) {
+    	for (int i = 0; i < mHanDeviceLinkedList.size(); i ++) {
+    		HanDevice hd = mHanDeviceLinkedList.get(i);
+    		hd.resetCnt();
+    		mHanDeviceLinkedList.set(i, hd);
+    	}
+    	updateHanDeviceTable ( );
+    }
+    
     // IO Manager Section
     private void stopIoManager() {
         if (mSerialIoManager != null) {
@@ -269,9 +276,6 @@ public class MainActivity extends Activity {
         		hd.incKeepAliveCnt();
         		mHanDeviceLinkedList.set(2, hd);
         		mState = State.IDLE;
-        		//boolean enableSms = mPerf.getBoolean ("enable_sms", false);
-        		//if (enableSms == true)
-        		//	sendSMS("Alert");
         	}
         	else
         		mState = State.IDLE;

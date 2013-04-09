@@ -7,8 +7,9 @@
     <string name="cmbs_connected_heading">CMBS Connected :</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="on">On</string>
-    <string name="off">Off</string>
+    <string name="on">LED On</string>
+    <string name="off">LED Off</string>
+    <string name="reset">Reset Table</string>
     <string name="dspg_logo">DSPG Logo</string>
     <string name="han_connected_device_heading">HAN Connected Device :</string>
     <string name="not_available">N/A</string>
